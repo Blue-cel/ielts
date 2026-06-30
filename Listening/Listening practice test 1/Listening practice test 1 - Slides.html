@@ -117,8 +117,14 @@
   .slot.wrong .tag{color:var(--bad)}
 
   .prompt{margin-top:18px;font-size:15px;color:var(--primary-deep);font-weight:600;
-          display:flex;align-items:center;gap:10px}
+          display:flex;align-items:center;gap:10px;flex-wrap:wrap}
   .prompt .dotlive{width:9px;height:9px;border-radius:50%;background:var(--primary-deep);animation:pulse 1.6s infinite}
+  .audiobtn{border:none;background:var(--primary-deep);color:#fff;padding:9px 18px;border-radius:99px;
+            font-size:14px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:7px;
+            transition:.15s;box-shadow:0 2px 8px rgba(58,158,201,.25)}
+  .audiobtn:hover{background:#2f8bb3}
+  .audiobtn.playing{background:#fff;color:var(--primary-deep);border:1.5px solid var(--primary)}
+  .audiobtn.needsplay{animation:pulse 1.6s infinite}
 
   /* nav bar */
   .navbar{display:flex;align-items:center;gap:18px;padding:14px 32px;border-top:1px solid var(--line);background:#fff}
@@ -223,6 +229,12 @@
 
   let idx=0;
   const qSlideIndex={}; SLIDES.forEach((s,i)=>{if(s.t==='q')qSlideIndex[s.q]=i;});
+
+  // keep the on-slide audio button in sync with playback state
+  player.addEventListener('playing',()=>{const b=document.getElementById('audioBtn');
+    if(b){b.classList.remove('needsplay');b.classList.add('playing');}});
+  ['pause','ended'].forEach(ev=>player.addEventListener(ev,()=>{
+    const b=document.getElementById('audioBtn'); if(b)b.classList.remove('playing');}));
 
   // ---- question dots ----
   Object.keys(ANS).forEach(q=>{
@@ -348,16 +360,20 @@
   }
 
   function promptHTML(q){
-    if(STATE[q].locked) return '';
+    const btn = `<button class="audiobtn needsplay" id="audioBtn" type="button">🔊 Play audio</button>`;
+    if(STATE[q].locked)
+      return `<div class="prompt"><button class="audiobtn" id="audioBtn" type="button">🔁 Replay audio</button></div>`;
     const txt = [21,22,23,24].includes(q)
-      ? 'Listening… drag your answer into the box, then press <b>Enter</b> to lock it in.'
-      : 'Listening… type the word or number, then press <b>Enter</b> to lock it in.';
-    return `<div class="prompt"><span class="dotlive"></span><span>${txt}</span></div>`;
+      ? 'drag your answer into the box, then press <b>Enter</b> to lock it in.'
+      : 'type the word or number, then press <b>Enter</b> to lock it in.';
+    return `<div class="prompt"><span class="dotlive"></span>${btn}<span>${txt}</span></div>`;
   }
 
   // ---------- wiring ----------
   function wireQ(s){
     const q=s.q;
+    const ab=host.querySelector('#audioBtn');
+    if(ab) ab.addEventListener('click',()=>setPlayer(q));
     if(s.sub==='tt'){
       const db=host.querySelector('.slot.active .dropbox');
       if(db){
