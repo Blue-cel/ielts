@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Listening Practice Test 1 — Section 3 (Classroom Slides)</title>
+<style>
+  :root{
+    --primary:#7ec8e3;--primary-deep:#3a9ec9;--primary-soft:#e3f4fb;
+    --bg:#fffafa;--ink:#2a3b44;--muted:#8aa0aa;
+    --good:#3ca36b;--bad:#d9655b;--line:#d7e3e9;--box:#c3d4dc;
+    --shadow:0 10px 40px rgba(58,158,201,.16);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{font-family:"Segoe UI",system-ui,-apple-system,sans-serif;background:var(--bg);
+       color:var(--ink);line-height:1.6;font-size:17px;overflow:hidden}
+
+  .deck{display:flex;flex-direction:column;height:100vh;
+        transition:margin-right .55s cubic-bezier(.22,.61,.36,1)}
+  body.panel-open .deck{margin-right:410px}
+
+  /* top bar */
+  .topbar{display:flex;align-items:center;gap:20px;padding:14px 32px;
+          border-bottom:1px solid var(--line);background:#fff}
+  .topbar .seclabel{font-weight:700;font-size:15px;color:var(--primary-deep);white-space:nowrap}
+  .nowplaying{flex:1;display:flex;align-items:center;gap:12px;justify-content:center}
+  .nowplaying .npl{font-size:13px;color:var(--muted);white-space:nowrap}
+  .nowplaying audio{height:38px;max-width:440px;width:100%}
+  .scorechip{font-size:14px;color:var(--muted);background:var(--primary-soft);
+             padding:6px 14px;border-radius:99px;white-space:nowrap}
+  .scorechip b{color:var(--primary-deep)}
+
+  /* stage */
+  .stage{flex:1;overflow-y:auto;display:flex;align-items:center;justify-content:center;padding:26px 40px}
+  .slide{width:100%;max-width:920px;animation:fade .45s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+  .slide h2{font-size:25px;margin:0 0 6px;color:var(--primary-deep)}
+  .slide .lead{font-size:16px;margin:0 0 4px}
+  .slide .lead b{font-weight:700}
+  .charttitle{text-align:center;font-weight:700;font-size:18px;margin:18px 0 16px}
+
+  /* title / result */
+  .center{text-align:center;padding:20px}
+  .center h1{font-size:38px;margin:0 0 4px}
+  .center .big{font-size:26px;color:var(--primary-deep);font-weight:700;margin:6px 0}
+  .center p{color:var(--muted);font-size:16px}
+  .bigscore{font-size:64px;font-weight:800;color:var(--primary-deep);margin:8px 0}
+  .startbtn{margin-top:22px;border:none;background:var(--primary-deep);color:#fff;
+            padding:14px 34px;border-radius:12px;font-size:18px;font-weight:700;cursor:pointer}
+  .startbtn:hover{background:#2f8bb3}
+  .center audio{margin:18px auto 0;display:block;width:min(480px,90%)}
+
+  /* columns */
+  .cols{display:flex;gap:40px;align-items:flex-start}
+  .colmain{flex:1 1 auto;min-width:0}
+  .options{flex:0 0 220px}
+  .options h3{font-size:15px;font-weight:700;margin:0 0 12px}
+  .opt{border:1px solid var(--box);border-radius:9px;padding:10px 13px;margin-bottom:10px;
+       font-size:14px;background:#fff;transition:.15s;user-select:none;display:flex;gap:8px;
+       align-items:baseline;box-shadow:0 1px 2px rgba(58,158,201,.05)}
+  .opt b{color:var(--primary-deep);min-width:14px}
+  .opt.draggable{cursor:grab}
+  .opt.draggable:hover{border-color:var(--primary);background:var(--primary-soft)}
+  .opt.draggable:active{cursor:grabbing}
+  .opt.dragging{opacity:.4}
+  .opt.used{opacity:.4;text-decoration:line-through;text-decoration-color:var(--box)}
+  .opt.inert{opacity:.55}
+
+  /* timetable */
+  table.tt{border-collapse:collapse;width:100%;font-size:15px}
+  table.tt th,table.tt td{border:1px solid var(--line);padding:12px;text-align:center}
+  table.tt th{background:var(--primary-soft);color:var(--primary-deep)}
+  table.tt td.day{background:#fbfdfe;font-weight:600;text-align:left}
+  table.tt td .x{color:#cdd9df}
+
+  /* labels */
+  ul.labels{list-style:none;padding:0;margin:0;font-size:16px}
+  ul.labels li{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  ul.labels .lno{font-weight:700;color:var(--primary-deep);min-width:26px}
+  .img-wrap{text-align:center;margin:2px 0 20px}
+  .img-wrap img{max-width:500px;width:100%;border:1px solid var(--line);border-radius:10px}
+  /* diagram questions: image left, answer rows right */
+  .img-wrap.diagram{margin:0}
+  .img-wrap.diagram img{max-width:100%}
+  .diagq{flex:0 0 330px}
+  .diagq h3{font-size:15px;font-weight:700;margin:0 0 12px}
+
+  /* answer boxes */
+  .slot{display:inline-flex;align-items:center;gap:8px;vertical-align:middle}
+  .box{height:34px;width:150px;border:1px solid var(--box);border-radius:8px;text-align:center;
+       font-size:16px;font-family:inherit;color:var(--ink);background:#fff;outline:none;transition:.15s}
+  .box::placeholder{color:#cdd9df;font-weight:600}
+  .box:focus{border-color:var(--primary-deep);box-shadow:0 0 0 3px rgba(126,200,227,.3)}
+  .box:disabled{background:#f6f9fb}
+
+  .dropbox{min-width:170px;height:38px;border:1.5px dashed var(--box);border-radius:9px;
+           display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:0 12px;
+           font-size:15px;background:#fff;outline:none;transition:.15s;color:var(--ink)}
+  .dropbox .ph{color:#cdd9df;font-weight:600}
+  .dropbox.filled{border-style:solid;border-color:var(--primary)}
+  .dropbox.filled b{color:var(--primary-deep);font-weight:700}
+  .dropbox.disabled{opacity:.5}
+
+  .slot.active .dropbox,.slot.active .box{cursor:pointer}
+  .slot.active .dropbox:not(.filled){animation:pulse 1.7s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(58,158,201,.4)}70%{box-shadow:0 0 0 9px rgba(58,158,201,0)}100%{box-shadow:0 0 0 0 rgba(58,158,201,0)}}
+  .dropbox.over{border-style:solid;border-color:var(--primary-deep);background:var(--primary-soft);transform:scale(1.04)}
+
+  .slot.correct .dropbox,.slot.correct .box{border-color:var(--good);background:#f1faf4;color:var(--good)}
+  .slot.correct .dropbox b{color:var(--good)}
+  .slot.wrong .dropbox,.slot.wrong .box{border-color:var(--bad);background:#fdf3f2;color:var(--bad)}
+  .slot.wrong .dropbox b{color:var(--bad)}
+  .tag{font-size:13px;font-weight:700;white-space:nowrap}
+  .slot.correct .tag{color:var(--good)}
+  .slot.wrong .tag{color:var(--bad)}
+
+  .prompt{margin-top:18px;font-size:15px;color:var(--primary-deep);font-weight:600;
+          display:flex;align-items:center;gap:10px}
+  .prompt .dotlive{width:9px;height:9px;border-radius:50%;background:var(--primary-deep);animation:pulse 1.6s infinite}
+
+  /* nav bar */
+  .navbar{display:flex;align-items:center;gap:18px;padding:14px 32px;border-top:1px solid var(--line);background:#fff}
+  .navbtn{border:none;background:var(--primary-deep);color:#fff;padding:11px 22px;border-radius:10px;
+          font-size:15px;font-weight:600;cursor:pointer;transition:.15s}
+  .navbtn:hover{background:#2f8bb3}
+  .navbtn.ghost{background:#fff;color:var(--primary-deep);border:1.5px solid var(--line)}
+  .navbtn.ghost:hover{border-color:var(--primary)}
+  .navbtn:disabled{opacity:.4;cursor:default}
+  .dots{flex:1;display:flex;gap:7px;justify-content:center;flex-wrap:wrap}
+  .qdot{width:30px;height:30px;border-radius:50%;border:2px solid var(--line);background:#fff;
+        color:var(--muted);font-size:11px;font-weight:700;cursor:pointer;display:flex;
+        align-items:center;justify-content:center;transition:.15s;padding:0}
+  .qdot:hover{border-color:var(--primary)}
+  .qdot.active{border-color:var(--primary-deep);box-shadow:0 0 0 4px rgba(126,200,227,.25);color:var(--primary-deep)}
+  .qdot.correct{background:var(--good);border-color:var(--good);color:#fff}
+  .qdot.wrong{background:var(--bad);border-color:var(--bad);color:#fff}
+
+  /* transcript drawer */
+  .panel{position:fixed;top:0;right:0;height:100vh;width:410px;background:#fff;
+         border-left:1px solid var(--line);box-shadow:var(--shadow);
+         transform:translateX(100%);transition:transform .55s cubic-bezier(.22,.61,.36,1);
+         display:flex;flex-direction:column;z-index:40}
+  body.panel-open .panel{transform:translateX(0)}
+  .panel .phead{padding:16px 20px;border-bottom:1px solid var(--line);background:var(--primary-soft);
+                display:flex;align-items:center;justify-content:space-between}
+  .panel .phead h3{margin:0;font-size:15px;color:var(--primary-deep)}
+  .panel .phead button{border:none;background:none;font-size:22px;color:var(--muted);cursor:pointer;line-height:1}
+  .panel .replay{margin:14px 20px 0;align-self:flex-start;background:var(--primary-deep);color:#fff;
+                 border:none;border-radius:8px;padding:8px 15px;font-size:13px;cursor:pointer}
+  .panel .replay:hover{background:#2f8bb3}
+  .panel .pbody{padding:14px 20px 24px;overflow-y:auto;font-size:15px}
+  .panel .pbody p{margin:0 0 13px}
+  .panel .spk{font-weight:700;color:var(--primary-deep)}
+  .panel mark{background:rgba(126,200,227,.45);border-radius:6px;padding:1px 3px;
+              box-shadow:0 0 0 3px rgba(126,200,227,.45)}
+</style>
+</head>
+<body>
+  <div class="deck">
+    <div class="topbar">
+      <div class="seclabel" id="secLabel">Section 3</div>
+      <div class="nowplaying"><span class="npl" id="npLabel"></span>
+        <audio id="player" controls preload="none"></audio></div>
+      <div class="scorechip">Score <b id="scoreNow">0</b> / 10</div>
+    </div>
+
+    <div class="stage"><div id="slideHost"></div></div>
+
+    <div class="navbar">
+      <button class="navbtn ghost" id="prevBtn">← Prev</button>
+      <div class="dots" id="dots"></div>
+      <button class="navbtn" id="nextBtn">Next →</button>
+    </div>
+  </div>
+
+  <aside class="panel" id="panel">
+    <div class="phead"><h3 id="panelTitle">Transcript</h3><button id="closePanel" title="Close">×</button></div>
+    <button class="replay" id="replayBtn">▶ Replay audio</button>
+    <div class="pbody" id="pbody"></div>
+  </aside>
+
+<script>
+  const FULL="../audio/IELTS-Recent-Actual-Test-With-Answers-Practice-Test-01-Section3.mp3";
+  const BANK=[['A','BBQ'],['B','Careers lecture'],['C','Computer lab visit'],['D','Dance'],
+              ['E','Library tour'],['F','Student Union induction'],['G','University tour'],['H','Legal rights lecture']];
+  const TEXT=Object.fromEntries(BANK);
+  const ANS={21:'G',22:'E',23:'C',24:'A',25:'Header',26:'16',27:'12',28:'Single',29:'Work',30:'Teacher'};
+  const TX={
+    21:`<p><span class="spk">Sam:</span> Well, the 'Careers Lecture' might be helpful, but I am interested in the 'Uni Tour'. It's probably too early to be thinking of careers now, anyway, and I want to know what's what at this new university, so <mark>I'm doing the tour.</mark></p>`,
+    22:`<p><span class="spk">Liz:</span> 'Library Tour' or 'Student Union Induction'. What do you think?</p>
+        <p><span class="spk">Sam:</span> We can go to the student union any time, so we should take advantage of the library tour while it's being offered.</p>
+        <p><span class="spk">Liz:</span> <mark>Library it is, then.</mark></p>`,
+    23:`<p><span class="spk">Liz:</span> After lunch there's a choice between visiting the computer lab, or attending a lecture on our legal rights.</p>
+        <p><span class="spk">Sam:</span> Computers are the basis of everything these days, so <mark>I'm going to the computer lab.</mark></p>`,
+    24:`<p><span class="spk">Sam:</span> The week winds up with celebrations on Friday afternoon. <mark>There's either a BBQ on the main lawn, or the dance.</mark></p>
+        <p><span class="spk">Sam:</span> If I can get a free meal, I'll take it any day, and I'm not good at dancing anyway.</p>`,
+    25:`<p><span class="spk">Liz:</span> The footer is at the bottom of the page, and the <mark>header is at the very top.</mark> That's why they call it a 'header'.</p>`,
+    26:`<p><span class="spk">Liz:</span> The heading on the page has to be a specific dimension. <mark>16 points,</mark> and bold print, and underlined.</p>`,
+    27:`<p><span class="spk">Liz:</span> The main text is Arial, and <mark>the size is 12 points,</mark> with the header and footer slightly smaller, at 10 points each.</p>`,
+    28:`<p><span class="spk">Liz:</span> The header and footer are different. <mark>They're only single-spaced.</mark></p>`,
+    29:`<p><span class="spk">Sam:</span> Look what they want in the header and footer. <mark>The header has the name of the work.</mark></p>`,
+    30:`<p><span class="spk">Sam:</span> No, the work, but surely <mark>the teacher's name must go somewhere.</mark> Ah — it goes in the footer.</p>`
+  };
+
+  const SLIDES=[
+    {t:'title'},
+    {t:'intro',sub:'tt'},
+    {t:'q',sub:'tt',q:21},{t:'q',sub:'tt',q:22},{t:'q',sub:'tt',q:23},{t:'q',sub:'tt',q:24},
+    {t:'intro',sub:'lbl'},
+    {t:'q',sub:'lbl',q:25},{t:'q',sub:'lbl',q:26},{t:'q',sub:'lbl',q:27},
+    {t:'q',sub:'lbl',q:28},{t:'q',sub:'lbl',q:29},{t:'q',sub:'lbl',q:30},
+    {t:'result'}
+  ];
+  const STATE={}; Object.keys(ANS).forEach(q=>STATE[q]={locked:false,correct:false,value:''});
+
+  const host=document.getElementById('slideHost'),
+        player=document.getElementById('player'), npLabel=document.getElementById('npLabel'),
+        secLabel=document.getElementById('secLabel'), scoreNow=document.getElementById('scoreNow'),
+        dotsEl=document.getElementById('dots'),
+        prevBtn=document.getElementById('prevBtn'), nextBtn=document.getElementById('nextBtn');
+
+  let idx=0;
+  const qSlideIndex={}; SLIDES.forEach((s,i)=>{if(s.t==='q')qSlideIndex[s.q]=i;});
+
+  // ---- question dots ----
+  Object.keys(ANS).forEach(q=>{
+    const d=document.createElement('button');d.className='qdot';d.textContent=q;d.dataset.q=q;
+    d.addEventListener('click',()=>go(qSlideIndex[q]));
+    dotsEl.appendChild(d);
+  });
+
+  // ---------- builders ----------
+  function slotTT(q,active){
+    const st=STATE[q];
+    if(st.locked) return `<span class="slot ${st.correct?'correct':'wrong'}">
+        <span class="dropbox filled"><b>${st.value}</b><span>${TEXT[st.value]||''}</span></span>
+        <span class="tag">${st.correct?'✓':'✗ '+ANS[q]}</span></span>`;
+    if(q===active) return `<span class="slot active" data-q="${q}">
+        <span class="dropbox" tabindex="0" data-q="${q}"><span class="ph">${q}</span></span>
+        <span class="tag"></span></span>`;
+    return `<span class="slot"><span class="dropbox disabled"><span class="ph">${q}</span></span></span>`;
+  }
+  function timetable(active){
+    return `<table class="tt">
+      <tr><th></th><th>Morning</th><th>Afternoon</th></tr>
+      <tr><td class="day">Monday</td><td>Opening Lecture</td><td>${slotTT(21,active)}</td></tr>
+      <tr><td class="day">Tuesday</td><td>${slotTT(22,active)}</td><td>Study Skills</td></tr>
+      <tr><td class="day">Wednesday</td><td><span class="x">—</span></td><td>${slotTT(23,active)}</td></tr>
+      <tr><td class="day">Thursday</td><td><span class="x">—</span></td><td><span class="x">—</span></td></tr>
+      <tr><td class="day">Friday</td><td><span class="x">—</span></td><td>${slotTT(24,active)}</td></tr>
+    </table>`;
+  }
+  function optionsBox(active){
+    const drag = active!==null && !STATE[active]?.locked && [21,22,23,24].includes(active);
+    const used=new Set(); [21,22,23,24].forEach(q=>{if(STATE[q].locked)used.add(STATE[q].value);});
+    const chips=BANK.map(([L,t])=>{
+      const cls=drag?'draggable':'inert';
+      return `<div class="opt ${cls} ${used.has(L)?'used':''}" data-l="${L}" ${drag?'draggable="true"':''}><b>${L}</b><span>${t}</span></div>`;
+    }).join('');
+    return `<aside class="options"><h3>List of options</h3>${chips}</aside>`;
+  }
+  function slotLBL(q,active){
+    const st=STATE[q];
+    if(st.locked) return `<span class="slot ${st.correct?'correct':'wrong'}">
+        <span class="box" style="display:inline-flex;align-items:center;justify-content:center">${st.value}</span>
+        <span class="tag">${st.correct?'✓':'✗ '+ANS[q]}</span></span>`;
+    if(q===active) return `<span class="slot active" data-q="${q}">
+        <input class="box" maxlength="20" placeholder="${q}" aria-label="Question ${q}"><span class="tag"></span></span>`;
+    return `<span class="slot"><input class="box" maxlength="20" placeholder="${q}" disabled></span>`;
+  }
+  function labels(active){
+    const rows=[[25,'top of the page'],[26,'heading size (points)'],[27,'main text size (points)'],
+               [28,'header & footer spacing'],[29,'what the header names'],[30,'what the footer names']];
+    return `<div class="cols">
+      <div class="colmain"><div class="img-wrap diagram"><img src="https://ieltstrainingonline.com/wp-content/uploads/2020/03/6-1-Q25-30.jpg" alt="Style guide labels"></div></div>
+      <aside class="diagq"><h3>Complete the labels</h3>
+        <ul class="labels">${rows.map(([q,h])=>`<li><span class="lno">${q}</span>${slotLBL(q,active)}<span> — ${h}</span></li>`).join('')}</ul>
+      </aside></div>`;
+  }
+
+  // ---------- render ----------
+  function render(){
+    const s=SLIDES[idx];
+    // top bar context
+    secLabel.textContent = s.sub==='lbl' ? 'Section 3 · Questions 25–30'
+                         : s.sub==='tt'  ? 'Section 3 · Questions 21–24' : 'Section 3';
+
+    if(s.t==='title'){
+      host.innerHTML=`<div class="slide center">
+        <h1>Listening Practice Test 1</h1><div class="big">Section 3</div>
+        <p>University orientation &middot; Questions 21–30</p>
+        <p style="margin-top:18px">Prefer to hear it all first? Play the full section, or press <b>Start</b> to go question by question.</p>
+        <audio controls preload="none" src="${FULL}"></audio>
+        <button class="startbtn" id="startBtn">Start ▶</button></div>`;
+      host.querySelector('#startBtn').addEventListener('click',()=>go(idx+1));
+      setPlayer(null);
+    }
+    else if(s.t==='intro'){
+      if(s.sub==='tt') host.innerHTML=`<div class="slide">
+        <h2>Questions 21 – 24</h2>
+        <p class="lead">Complete the timetable below.</p>
+        <p class="lead"><b>Drag</b> the correct option (A–H) onto each day and time. One question plays at a time.</p>
+        <div class="charttitle">University Orientation Timetable</div>
+        <div class="cols"><div class="colmain">${timetable(null)}</div>${optionsBox(null)}</div></div>`;
+      else host.innerHTML=`<div class="slide">
+        <h2>Questions 25 – 30</h2>
+        <p class="lead">Complete the labels on the style guide.</p>
+        <p class="lead">Write <b>ONE WORD OR A NUMBER</b> for each answer. One question plays at a time.</p>
+        ${labels(null)}</div>`;
+      setPlayer(null);
+    }
+    else if(s.t==='q'){
+      const q=s.q;
+      if(s.sub==='tt') host.innerHTML=`<div class="slide">
+        <h2>Question ${q}</h2>
+        <div class="charttitle">University Orientation Timetable</div>
+        <div class="cols"><div class="colmain">${timetable(q)}
+          ${promptHTML(q)}</div>${optionsBox(q)}</div></div>`;
+      else host.innerHTML=`<div class="slide">
+        <h2>Question ${q}</h2>${labels(q)}${promptHTML(q)}</div>`;
+      wireQ(s);
+      setPlayer(q);               // autoplay this question
+    }
+    else if(s.t==='result'){
+      const sc=score();
+      host.innerHTML=`<div class="slide center"><h1>Section complete 🎧</h1>
+        <div class="bigscore">${sc} / 10</div>
+        <p>Click any number below to revisit a question, replay its clip and re-read the transcript.</p>
+        <button class="startbtn" onclick="location.reload()">Restart</button></div>`;
+      setPlayer(null);
+    }
+
+    // transcript: show if this question already answered, else retract
+    if(s.t==='q' && STATE[s.q].locked) showTranscript(s.q);
+    else document.body.classList.remove('panel-open');
+
+    // nav + dots
+    prevBtn.disabled = idx===0;
+    nextBtn.disabled = idx===SLIDES.length-1;
+    nextBtn.textContent = idx===SLIDES.length-2 ? 'Finish →' : 'Next →';
+    [...dotsEl.children].forEach(d=>{
+      const q=d.dataset.q, st=STATE[q];
+      d.className='qdot'+(st.locked?(st.correct?' correct':' wrong'):'')+(SLIDES[idx].q==q?' active':'');
+    });
+    scoreNow.textContent=score();
+  }
+
+  function promptHTML(q){
+    if(STATE[q].locked) return '';
+    const txt = [21,22,23,24].includes(q)
+      ? 'Listening… drag your answer into the box, then press <b>Enter</b> to lock it in.'
+      : 'Listening… type the word or number, then press <b>Enter</b> to lock it in.';
+    return `<div class="prompt"><span class="dotlive"></span><span>${txt}</span></div>`;
+  }
+
+  // ---------- wiring ----------
+  function wireQ(s){
+    const q=s.q;
+    if(s.sub==='tt'){
+      const db=host.querySelector('.slot.active .dropbox');
+      if(db){
+        db.addEventListener('dragover',e=>{e.preventDefault();db.classList.add('over');});
+        db.addEventListener('dragleave',()=>db.classList.remove('over'));
+        db.addEventListener('drop',e=>{e.preventDefault();db.classList.remove('over');
+          const L=e.dataTransfer.getData('text/plain'); if(L) setLetter(db,q,L);});
+        db.addEventListener('keydown',e=>{
+          if(e.key==='Enter'){e.preventDefault();lock(q);}
+          else if(e.key==='Delete'||e.key==='Backspace'){e.preventDefault();clearLetter(db,q);}});
+        db.focus();
+      }
+      host.querySelectorAll('.opt.draggable').forEach(o=>{
+        o.addEventListener('dragstart',e=>{o.classList.add('dragging');e.dataTransfer.setData('text/plain',o.dataset.l);e.dataTransfer.effectAllowed='copy';});
+        o.addEventListener('dragend',()=>o.classList.remove('dragging'));
+      });
+    }else{
+      const input=host.querySelector('.slot.active input');
+      if(input){
+        input.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();lock(q);}});
+        setTimeout(()=>input.focus(),60);
+      }
+    }
+  }
+
+  function setLetter(db,q,L){
+    db.dataset.letter=L;db.classList.add('filled');
+    db.innerHTML=`<b>${L}</b><span>${TEXT[L]}</span>`;db.focus();
+    // grey out used chip on this slide
+    host.querySelectorAll('.opt').forEach(o=>o.classList.toggle('used',o.dataset.l===L));
+  }
+  function clearLetter(db,q){
+    delete db.dataset.letter;db.classList.remove('filled');
+    db.innerHTML=`<span class="ph">${q}</span>`;
+    host.querySelectorAll('.opt').forEach(o=>o.classList.remove('used'));
+  }
+
+  function lock(q){
+    if(STATE[q].locked) return;
+    const slot=host.querySelector('.slot.active'); if(!slot) return;
+    let val='';
+    if([21,22,23,24].includes(q)){const db=slot.querySelector('.dropbox');val=db.dataset.letter||'';}
+    else{val=(slot.querySelector('input').value||'').trim();}
+    if(!val) return;
+    const correct=val.toLowerCase()===ANS[q].toLowerCase();
+    STATE[q]={locked:true,correct,value:val};
+    // reflect immediately
+    slot.classList.remove('active');slot.classList.add(correct?'correct':'wrong');
+    const tag=slot.querySelector('.tag'); if(tag) tag.textContent=correct?'✓':'✗ '+ANS[q];
+    const inp=slot.querySelector('input'); if(inp) inp.disabled=true;
+    slot.querySelectorAll('.dropbox').forEach(d=>d.classList.remove('active'));
+    host.querySelectorAll('.prompt').forEach(p=>p.remove());
+    scoreNow.textContent=score();
+    // dot
+    const dot=[...dotsEl.children].find(d=>d.dataset.q==q);
+    if(dot){dot.classList.remove('active');dot.classList.add(correct?'correct':'wrong');}
+    showTranscript(q);
+  }
+
+  // ---------- audio ----------
+  function setPlayer(q){
+    if(q===null){player.pause();player.removeAttribute('src');npLabel.textContent='';return;}
+    npLabel.textContent='🎧 Now playing: Question '+q;
+    player.src='../audio/'+q+'.mp3';player.currentTime=0;
+    player.play().catch(()=>{});      // autoplay (works after first user gesture)
+  }
+
+  // ---------- transcript ----------
+  let openQ=null;
+  function showTranscript(q){
+    openQ=q;document.body.classList.add('panel-open');
+    document.getElementById('panelTitle').textContent='Transcript · Q'+q;
+    document.getElementById('pbody').innerHTML=TX[q];
+  }
+  document.getElementById('closePanel').addEventListener('click',()=>document.body.classList.remove('panel-open'));
+  document.getElementById('replayBtn').addEventListener('click',()=>{if(openQ!==null)setPlayer(openQ);});
+
+  function score(){return Object.keys(ANS).filter(q=>STATE[q].correct).length;}
+
+  // ---------- navigation ----------
+  function go(i){ i=Math.max(0,Math.min(SLIDES.length-1,i)); idx=i; render(); }
+  prevBtn.addEventListener('click',()=>go(idx-1));
+  nextBtn.addEventListener('click',()=>go(idx+1));
+  document.addEventListener('keydown',e=>{
+    const typing = e.target.tagName==='INPUT';
+    if(e.key==='ArrowRight'&&!typing){go(idx+1);}
+    else if(e.key==='ArrowLeft'&&!typing){go(idx-1);}
+  });
+
+  render();
+</script>
+</body>
+</html>
